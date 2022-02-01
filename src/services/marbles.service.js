@@ -43,6 +43,14 @@ class MarblesService extends EventEmitter {
     setPlayMessage(channel, msg) {
         this.games[channel].message = msg;
     }
+
+    setMinReqMsg(channel, msg) {
+        this.games[channel].minReqMsg = msg;
+    }
+
+    setMinMsgDelay(channel, msg) {
+        this.games[channel].minMsgDelay = msg * 1000;
+    }
     
     getGames() {
         let _games = [];
@@ -52,7 +60,9 @@ class MarblesService extends EventEmitter {
                 rounds: this.games[Object.keys(this.games)[i]].rounds,
                 status: this.games[Object.keys(this.games)[i]].status,
                 isRunning: this.games[Object.keys(this.games)[i]].isRunning,
-                message: this.games[Object.keys(this.games)[i]].message
+                message: this.games[Object.keys(this.games)[i]].message,
+                minReqMsg: this.games[Object.keys(this.games)[i]].minReqMsg,
+                minMsgDelay: this.games[Object.keys(this.games)[i]].minMsgDelay / 1000
             }
 
             _games.push(_game);
@@ -69,7 +79,9 @@ class MarblesService extends EventEmitter {
                 msgCount: 0,
                 msgCountHandle: {},
                 isRunning: true,
-                message: GLOBAL_MESSAGE
+                message: GLOBAL_MESSAGE,
+                minReqMsg: 3,
+                minMsgDelay: 15000
             }
         }
     }
@@ -97,7 +109,7 @@ class MarblesService extends EventEmitter {
 
     checkMsgCountForChannel(channel) {
         this.games[channel].msgCount = this.games[channel].msgCount + 1;
-        if(this.games[channel].msgCount > GLOBAL_MINMSG) {
+        if(this.games[channel].msgCount > this.games[channel].minReqMsg) {
             this.games[channel].msgCount = 0;
             return true;
         }
@@ -106,7 +118,7 @@ class MarblesService extends EventEmitter {
             this.games[channel].msgCountHandle = setTimeout(function(){
                 this.games[channel].msgCount = 0;
                 clearTimeout(this.games[channel].msgCountHandle);
-            }, 15000);
+            }, this.games[channel].minMsgDelay);
         }
         
         return false;

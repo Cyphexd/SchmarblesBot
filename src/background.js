@@ -17,7 +17,7 @@ async function createWindow() {
 
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 630,
+    width: 1000,
     height: 400,
     webPreferences: {
       
@@ -192,6 +192,22 @@ ipcMain.on('TWITCH_CHANNEL', async(event, arg) => {
       marblesService.setPlayMessage(data.channel, data.message);
       const _opt = {
         command: 'CHANGE_MESSAGE_OK',
+        data: data.message
+      }
+      event.reply('TWITCH_CHANNEL', _opt);
+    } break;
+    case 'CHANGE_MIN_MESSAGES': {
+      marblesService.setMinReqMsg(data.channel, data.message);
+      const _opt = {
+        command: 'CHANGE_MIN_MESSAGES_OK',
+        data: data.message
+      }
+      event.reply('TWITCH_CHANNEL', _opt);
+    } break;
+    case 'CHANGE_MIN_MESSAGE_DELAY': {
+      marblesService.setMinMsgDelay(data.channel, data.message);
+      const _opt = {
+        command: 'CHANGE_MIN_MESSAGE_DELAY_OK',
         data: data.message
       }
       event.reply('TWITCH_CHANNEL', _opt);

@@ -18,22 +18,29 @@
                         <tr>
                             <th scope="col" class="col-md-2">Channel</th>
                             <th scope="col" class="col-md-1">Rounds</th>
-                            <th scope="col">Message</th>
+                            
                             <th scope="col">Status</th>
-                            <th scope="col" class="col-md-1">Action</th>
+                            <th scope="col">Message</th>
+                            <th scope="col">Req. Messages</th>
+                            <th scope="col">Max Delay</th>
+                            <th scope="col" class="col-md-3" style="text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="game in games" :key="game.channel">
                              <th scope="row">{{ game.channel }}</th>
                             <td>{{ game.rounds }}</td>
-                            <td>{{ game.message }}</td>
                             <td>{{ game.status }}</td>
-                            <td>
+                            <td>{{ game.message }}</td>
+
+                            <td>{{ game.minReqMsg }}</td>
+                            <td>{{ game.minMsgDelay }}</td>
+                            
+                            <td style="text-align: center;">
                                 <button class="btn btn-primary btn-sm action" @click="toggleGame(game.channel)" >
                                     <i :class="[ 'fas', game.isRunning ? 'fa-pause' : 'fa-play' ]" ></i>
                                 </button>
-                                 <button class="btn btn-warning btn-sm action" @click="editGameMessage(game.channel)" >
+                                 <button class="btn btn-warning btn-sm action" @click="editGameSettings(game.channel)" >
                                     <i class="fas fa-wrench" ></i>
                                 </button>
                                 
@@ -77,6 +84,8 @@ export default {
                     this.games = data;
                 } break;
                 case 'REMOVE_GAME_OK':
+                case 'CHANGE_MIN_MESSAGES_OK':
+                case 'CHANGE_MIN_MESSAGE_DELAY_OK':
                 case 'TOGGLE_PLAY_GAME_OK':
                 case 'UPDATE_GAME': {
                     this.refreshGames();
@@ -128,11 +137,39 @@ export default {
             window.ipc.send('TWITCH_CHANNEL', _opts);
         },
 
-        editGameMessage(channel) {
-            this.$prompt("Input new Message").then(text => {
+        async editGameSettings(channel) {
+            
+            
+            await this.$prompt("Input new Message", '!play', 'Change Message').then(text => {
                 if(text) {
                     const _opts = {
-                        command: 'REMOVE_GAME',
+                        command: 'CHANGE_MESSAGE',
+                        data: {
+                            channel: channel,
+                            message: text
+                        }
+                    }
+                    window.ipc.send('TWITCH_CHANNEL', _opts);
+                }
+            });
+
+            await this.$prompt("Adjust Min required Messages", '3', 'Change min. required messages').then(text => {
+                if(text) {
+                    const _opts = {
+                        command: 'CHANGE_MIN_MESSAGES',
+                        data: {
+                            channel: channel,
+                            message: text
+                        }
+                    }
+                    window.ipc.send('TWITCH_CHANNEL', _opts);
+                }
+            });
+
+            await this.$prompt("Adjust min delay between messages in seconds", '10', 'Change min. delay').then(text => {
+                if(text) {
+                    const _opts = {
+                        command: 'CHANGE_MIN_MESSAGE_DELAY',
                         data: {
                             channel: channel,
                             message: text
